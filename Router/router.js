@@ -137,8 +137,8 @@ router.post('/withdrawl', withdrawl);
 
 
 
-router.post('/addbid',middelware, addbid);
-router.post('/bid',middelware, bid);
+router.post('/addbid', addbid);
+router.post('/bid', bid);
 
 
 
