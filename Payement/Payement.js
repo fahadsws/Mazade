@@ -31,8 +31,8 @@ async function Payement(req,res){
             "payment_method": "paypal"
         },
         "redirect_urls": {
-            "return_url": `http://192.168.0.161:8000/api/sucess?pay=${amount.toFixed(2)}&by=${by}&final=${final}`,
-            "cancel_url": "http://192.168.0.161:8000/api/cancled"
+            "return_url": `${process.env.API_URL}sucess?pay=${amount.toFixed(2)}&by=${by}&final=${final}`,
+            "cancel_url": `${process.env.API_URL}cancled`
         },
         "transactions": [{
             "item_list": {
