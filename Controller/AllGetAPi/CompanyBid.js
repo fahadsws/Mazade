@@ -4,7 +4,7 @@ function company(req, res) {
     try {
         const { id } = req.params;
 
-        pool.query('SELECT * FROM seller_bid WHERE created_by = ?', [id], (err, sellerBids) => {
+        pool.query('SELECT * FROM seller_bid WHERE created_by = ? And status < 3', [id], (err, sellerBids) => {
             if (err) {
                 console.error('Error executing first SQL query:', err);
                 return res.status(500).json({ error: 'Internal Server Error' });
