@@ -52,7 +52,7 @@ async function Success(req, res) {
                             return res.status(500).json({ error: 'Internal Server Error' });
                         }
         
-                        pool.query('UPDATE bid SET payement_code = ?,status = ?,code = ? WHERE created_by = ? && final_price = ?', [data?.insertId,4,randomNumber, by,final], (e, r) => {
+                        pool.query('UPDATE bid SET payement_code = ?,status = ?,code = ? WHERE created_by = ? && final_price = ?', [data?.insertId,1,randomNumber, by,final], (e, r) => {
                             if (e) {
                                 console.error('Error executing SQL query:', e);
                                 return res.status(500).json({ error: 'Internal Server Error' });
