@@ -17,14 +17,36 @@ async function UserDashBoard(req, res) {
 
         const getPayments = (id) => {
             return new Promise((resolve, reject) => {
-                pool.query('SELECT * FROM payement WHERE created_by = ?', [id], (err, results) => {
+                pool.query('SELECT * FROM payement WHERE created_by = ?', [id], async (err, results) => {
                     if (err) {
                         return reject(err);
                     }
-                    resolve(results);
+        
+                    const bidIds = await results.map(bid => bid.price); // Assuming bid has an id field, adjust as per your schema
+                    if (bidIds.length === 0) {
+                        resolve(0); // Resolve with a default value or handle empty case as needed
+                        return;
+                    }
+        
+                    pool.query('SELECT * FROM seller_bid WHERE id IN (?) AND status = 5', [bidIds], (err, bids) => {
+                        if (err) {
+                            console.error('Error executing second SQL query:', err);
+                            return reject(err);
+                        }
+        
+                        let totalPrice = 0;
+                        bids.forEach(row => {
+                            totalPrice += row.price;
+                        });
+        
+                        resolve(totalPrice);
+                    });
+        
                 });
             });
         };
+        
+        
 
         const getSellerBids = (id) => {
             return new Promise((resolve, reject) => {
@@ -39,14 +61,36 @@ async function UserDashBoard(req, res) {
 
         const getCompPayments = (id) => {
             return new Promise((resolve, reject) => {
-                pool.query('SELECT * FROM payement WHERE created_to = ?', [id], (err, results) => {
+                pool.query('SELECT * FROM payement WHERE created_to = ?', [id], async (err, results) => {
                     if (err) {
                         return reject(err);
                     }
-                    resolve(results);
+        
+                    const bidIds = results.map(bid => bid.price); // Assuming bid has an id field, adjust as per your schema
+        
+                    if (bidIds.length === 0) {
+                        resolve(0); // Resolve with a default value or handle empty case as needed
+                        return;
+                    }
+        
+                    pool.query('SELECT * FROM seller_bid WHERE id IN (?)', [bidIds], async (err, bids) => {
+                        if (err) {
+                            console.error('Error executing second SQL query:', err);
+                            return reject(err);
+                        }
+        
+                        let totalPrice = 0;
+                        bids.forEach(row => {
+                            totalPrice += row.price;
+                        });
+        
+                        resolve(totalPrice);
+                    });
+        
                 });
             });
         };
+        
 
         const [bids, payments, sellerBids, compPayments] = await Promise.all([
             getBids(id),
@@ -55,18 +99,16 @@ async function UserDashBoard(req, res) {
             getCompPayments(id)
         ]);
 
-        const totalCreatedPrice = payments.reduce((sum, payment) => sum + payment.price, 0);
-        const totalCompPrice = compPayments.reduce((sum, payment) => sum + payment.price, 0);
-
+       
         res.status(200).json({
             status: 200,
             user: {
                 bid: bids.length,
-                total: totalCreatedPrice
+                total: payments
             },
             company: {
                 bid: sellerBids.length,
-                total: totalCompPrice
+                total: compPayments
             }
         });
 
@@ -75,5 +117,4 @@ async function UserDashBoard(req, res) {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 }
-
 module.exports = UserDashBoard;
